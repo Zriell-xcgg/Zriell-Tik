@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azril Anak SMK.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0;
+            background-image: url('background.jpg'); 
+            background-size: cover; 
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Poppins', sans-serif;
+            color: white; 
+            overflow-x: hidden;
+            background-color: #000;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.9);
+            min-height: 100vh; 
+            width: 100%;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+        }
+
+        /* NOTIF POPUP DI ATAS */
+        #toast {
+            position: fixed; top: -100px; left: 50%;
+            transform: translateX(-50%);
+            background: #e6192e; color: white;
+            padding: 12px 25px; border-radius: 50px;
+            font-weight: bold; font-size: 0.9rem;
+            z-index: 1000; transition: 0.5s ease-in-out;
+            box-shadow: 0 5px 15px rgba(230, 25, 46, 0.4);
+            white-space: nowrap;
+        }
+        #toast.show { top: 20px; }
+
+        /* MENU ICON & SIDEBAR */
+        .menu-icon {
+            position: fixed; top: 20px; left: 20px;
+            z-index: 100; cursor: pointer; background: #e6192e;
+            padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px;
+        }
+        .menu-icon span { display: block; width: 25px; height: 3px; background: white; }
+
+        .sidebar {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+            background: rgba(15, 15, 15, 0.98); backdrop-filter: blur(10px);
+            z-index: 99; transition: 0.4s; padding-top: 80px; border-right: 3px solid #e6192e;
+            overflow-y: auto;
+        }
+        .sidebar.active { left: 0; }
+        .sidebar h3 { color: #e6192e; padding: 0 25px; margin-bottom: 15px; font-size: 1.1rem; }
+        .lang-option { padding: 12px 25px; cursor: pointer; transition: 0.3s; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .lang-option:hover { background: rgba(230, 25, 46, 0.2); color: #e6192e; }
+
+        /* CARD DOWNLOADER */
+        .hero-section { height: 100vh; display: flex; justify-content: center; align-items: center; width: 100%; }
+        .card {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px);
+            border: 2px solid #e6192e; border-radius: 25px; padding: 30px;
+            text-align: center; width: 90%; max-width: 380px;
+        }
+        h1 { color: #e6192e; margin: 0; font-size: 2rem; }
+        #subTitle { font-size: 0.75rem; color: #ccc; margin: 5px 0 0 0; }
+
+        /* Platform badge */
+        #platformBadge {
+            display: inline-block;
+            margin: 8px 0 0 0;
+            padding: 3px 12px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            background: rgba(230, 25, 46, 0.15);
+            border: 1px solid #e6192e;
+            color: #e6192e;
+            min-height: 22px;
+            transition: 0.3s;
+        }
+        
+        .input-group { margin: 15px 0; }
+        input {
+            width: 100%; padding: 15px; border-radius: 12px; border: none; outline: none;
+            text-align: center; font-family: 'Poppins', sans-serif;
+        }
+        button {
+            width: 100%; padding: 15px; background: #e6192e; color: #fff;
+            border: none; border-radius: 12px; font-weight: bold; cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        #status { margin-top: 15px; font-size: 0.9rem; min-height: 20px; }
+
+        /* Multi-quality result */
+        .result-links { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .result-links a {
+            display: block; padding: 10px 15px;
+            background: rgba(0, 255, 136, 0.1); border: 1px solid #00ff88;
+            border-radius: 10px; color: #00ff88; text-decoration: none;
+            font-weight: bold; font-size: 0.85rem; transition: 0.2s;
+        }
+        .result-links a:hover { background: rgba(0, 255, 136, 0.2); }
+
+        /* CONTENT SECTION */
+        .content-section { width: 100%; max-width: 800px; padding: 50px 20px; }
+        .desc-box { 
+            background: rgba(0, 0, 0, 0.5); padding: 30px; 
+            border-radius: 20px; border-left: 5px solid #e6192e; 
+            margin-bottom: 40px; text-align: left;
+        }
+        .desc-box h3 { color: #e6192e; margin-top: 0; font-size: 1.2rem; font-weight: 700; }
+        .desc-box p { line-height: 1.6; font-size: 0.95rem; }
+
+        /* Supported platforms box */
+        .platform-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .chip {
+            padding: 6px 14px; border-radius: 50px;
+            font-size: 0.8rem; font-weight: bold;
+            background: rgba(230, 25, 46, 0.15);
+            border: 1px solid rgba(230, 25, 46, 0.4);
+            color: #fff;
+        }
+
+        /* FOOTER */
+        .footer { 
+            width: 100%; padding: 40px 20px; background: rgba(0, 0, 0, 0.9); 
+            text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+        .grid-footer {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 20px; text-align: left; margin-top: 30px;
+        }
+        .grid-footer h4 { color: #fff; margin-bottom: 10px; font-size: 0.9rem; }
+        .grid-footer p { margin: 5px 0; font-size: 0.8rem; color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <!-- Notification Toast -->
+    <div id="toast">Link-nya mana pintar?</div>
+
+    <!-- Menu Button -->
+    <div class="menu-icon" onclick="toggleSidebar(event)">
+        <span></span><span></span><span></span>
+    </div>
+
+    <!-- Sidebar Language -->
+    <div class="sidebar" id="sidebar">
+        <h3 id="sideTitle">Pilih Bahasa</h3>
+        <div class="lang-option" onclick="changeLang('id')">🇮🇩 Indonesia</div>
+        <div class="lang-option" onclick="changeLang('en')">🇺🇸 English</div>
+        <div class="lang-option" onclick="changeLang('jp')">🇯🇵 Japanese</div>
+        <div class="lang-option" onclick="changeLang('ms')">🇲🇾 Melayu</div>
+        <div class="lang-option" onclick="changeLang('kr')">🇰🇷 Korea</div>
+        <div class="lang-option" onclick="changeLang('cn')">🇨🇳 Mandarin</div>
+        <div class="lang-option" onclick="changeLang('es')">🇪🇸 Spanyol</div>
+        <div class="lang-option" onclick="changeLang('ar')">🇸🇦 Arab</div>
+    </div>
+
+    <div class="overlay" onclick="closeSidebar()">
+        <!-- Downloader -->
+        <div class="hero-section">
+            <div class="card">
+                <h1 id="mainTitle">Zriell-Tik</h1>
+                <p id="subTitle">Download Disini Aja Ya Pintarr</p>
+                <div id="platformBadge">🎬 TikTok • Instagram • YouTube</div>
+                <div class="input-group">
+                    <input type="text" id="url" placeholder="Paste link video di sini..." oninput="detectPlatform()">
+                </div>
+                <button onclick="download()" id="btnText">Download Sekarang</button>
+                <div id="status"></div>
+            </div>
+        </div>
+
+        <!-- Deskripsi -->
+        <div class="content-section">
+            <div class="desc-box">
+                <h3 id="descTitle1">Apa itu Zriell-Tik?</h3>
+                <p id="descText1">Zriell-Tik adalah platform gratis yang memudahkan kamu untuk mengunduh video dari berbagai media sosial tanpa watermark. Dengan tema merah khas Chisa Mbg (My Bini Guwe).</p>
+                <div class="platform-chips">
+                    <span class="chip">🎵 TikTok</span>
+                    <span class="chip">📸 Instagram Reels</span>
+                    <span class="chip">▶️ YouTube</span>
+                </div>
+            </div>
+            <div class="desc-box">
+                <h3 id="descTitle2">Kenapa Memilih Kami?</h3>
+                <div id="descText2">
+                    <p>⚡ <b>Cepat:</b> Proses penarikan data video hanya hitungan detik.</p>
+                    <p>🛡️ <b>Aman:</b> Tidak perlu login atau memberikan data pribadi.</p>
+                    <p>✨ <b>Kualitas HD:</b> Memberikan kualitas video terbaik.</p>
+                    <p>🌐 <b>Multi Platform:</b> TikTok, Instagram Reels, dan YouTube.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <h2 style="color:#e6192e; margin: 0;">Zriell-Tik</h2>
+            <div class="grid-footer">
+                <div>
+                    <h4>PETA SITUS</h4>
+                    <p>Beranda</p><p>Cara Pakai</p><p>Kebijakan Privasi</p>
+                </div>
+                <div>
+                    <h4>IKUTI KAMI</h4>
+                    <p>Instagram @zriell.x</p>
+                    <p>TikTok @azrilanakesemka</p>
+                    <p>YouTube @wildansyahazril</p>
+                </div>
+            </div>
+            <hr style="margin: 30px 0; border: 0.5px solid rgba(255,255,255,0.1);">
+            <p style="font-size: 0.7rem; color: #666;">© 2026 Zriell-Tik. Dibuat dengan ❤️ untuk Chisa Mbg.</p>
+        </footer>
+    </div>
+
+    <script>
+        const langData = {
+            id: { sideTitle: "Pilih Bahasa", mainTitle: "Zriell-Tik", subTitle: "Download Disini Aja Ya Anjing", btnText: "Download Now", placeholder: "Paste link video di sini...", alertEmpty: "Link-nya Mana Njink?", descTitle1: "Apa itu Zriell-Tik?", descText1: "Zriell-Tik adalah platform gratis yang memudahkan kamu untuk mengunduh video dari berbagai media sosial tanpa watermark. Dengan tema merah khas Chisa Mbg (My Bini Guwe).", descTitle2: "Kenapa Memilih Kami?", descText2: "<p>⚡ <b>Cepat:</b> Proses penarikan data video hanya hitungan detik.</p><p>🛡️ <b>Aman:</b> Tidak perlu login atau memberikan data pribadi.</p><p>✨ <b>Kualitas HD:</b> Memberikan kualitas video terbaik.</p><p>🌐 <b>Multi Platform:</b> TikTok, Instagram Reels, dan YouTube.</p>" },
+            en: { sideTitle: "Select Language", mainTitle: "Zriell-Tik", subTitle: "Just Download Here, Bro", btnText: "Download Now", placeholder: "Paste video link here...", alertEmpty: "Where is the link, bro?", descTitle1: "What is Zriell-Tik?", descText1: "A free platform to download social media videos without watermark with Chisa Mbg theme.", descTitle2: "Why Choose Us?", descText2: "<p>⚡ <b>Fast:</b> Process in seconds.</p><p>🛡️ <b>Secure:</b> No login required.</p><p>✨ <b>HD Quality:</b> Best video quality.</p><p>🌐 <b>Multi Platform:</b> TikTok, Instagram Reels & YouTube.</p>" },
+            jp: { sideTitle: "言語を選択", mainTitle: "Zriell-Tik", subTitle: "ここでダウンロードしてください", btnText: "ダウンロード", placeholder: "リンクを貼り付け...", alertEmpty: "リンクはどこですか？", descTitle1: "Zriell-Tikとは？", descText1: "ウォーターマークなしで動画を保存できる無料プラットフォームです。", descTitle2: "特徴", descText2: "<p>⚡ <b>高速:</b> 数秒で処理。</p><p>🛡️ <b>安全:</b> ログイン不要。</p><p>✨ <b>HD品質:</b> 最高画質。</p><p>🌐 <b>マルチ:</b> TikTok・Instagram・YouTube対応。</p>" },
+            ms: { sideTitle: "Pilih Bahasa", mainTitle: "Zriell-Tik", subTitle: "Muat Turun Sini Saja Lah", btnText: "Muat Turun", placeholder: "Tampal pautan di sini...", alertEmpty: "Pautan mana, wei?", descTitle1: "Apa itu Zriell-Tik?", descText1: "Platform percuma muat turun video tanpa watermark tema Chisa Mbg.", descTitle2: "Kenapa Pilih Kami?", descText2: "<p>⚡ <b>Laju:</b> Proses sepantas kilat.</p><p>🛡️ <b>Selamat:</b> Tanpa log masuk.</p><p>✨ <b>Kualiti HD:</b> Video terbaik.</p><p>🌐 <b>Pelbagai:</b> TikTok, Instagram & YouTube.</p>" },
+            kr: { sideTitle: "언어 선택", mainTitle: "Zriell-Tik", subTitle: "여기서 다운로드하세요", btnText: "다운로드", placeholder: "링크를 붙여넣으세요...", alertEmpty: "링크가 어디 있나요?", descTitle1: "Zriell-Tik이란?", descText1: "워터마크 없는 무료 비디오 다운로더입니다.", descTitle2: "우리를 선택하는 이유?", descText2: "<p>⚡ <b>빠름:</b> 수초 내 처리.</p><p>🛡️ <b>안전:</b> 로그인 불필요.</p><p>✨ <b>HD 품질:</b> 최상의 화질.</p><p>🌐 <b>멀티:</b> TikTok·Instagram·YouTube 지원.</p>" },
+            cn: { sideTitle: "选择语言", mainTitle: "Zriell-Tik", subTitle: "就在这里下载吧", btnText: "立即下载", placeholder: "在此粘贴链接...", alertEmpty: "链接在哪里？", descTitle1: "什么是 Zriell-Tik?", descText1: "免费无水印视频下载平台。", descTitle2: "为什么选择我们？", descText2: "<p>⚡ <b>快速:</b> 几秒钟内完成。</p><p>🛡️ <b>安全:</b> 无需登录。</p><p>✨ <b>高清:</b> 提供最佳质量。</p><p>🌐 <b>多平台:</b> TikTok·Instagram·YouTube。</p>" },
+            es: { sideTitle: "Seleccionar Idioma", mainTitle: "Zriell-Tik", subTitle: "Descarga aquí mismo", btnText: "Descargar", placeholder: "Pega el enlace aquí...", alertEmpty: "¿Dónde está el enlace?", descTitle1: "¿Qué es Zriell-Tik?", descText1: "Descargador gratuito de videos sin marca de agua.", descTitle2: "¿Por qué elegirnos?", descText2: "<p>⚡ <b>Rápido:</b> Proceso en segundos.</p><p>🛡️ <b>Seguro:</b> Sin registros.</p><p>✨ <b>HD:</b> Calidad máxima.</p><p>🌐 <b>Multi:</b> TikTok, Instagram y YouTube.</p>" },
+            ar: { sideTitle: "اختر اللغة", mainTitle: "Zriell-Tik", subTitle: "قم بالتنزيل من هنا", btnText: "تنزيل الآن", placeholder: "الصق الرابط هنا...", alertEmpty: "أين الرابط؟", descTitle1: "ما هو Zriell-Tik؟", descText1: "منصة مجانية لتحميل الفيديو بدون علامة مائية.", descTitle2: "لماذا تختارنا؟", descText2: "<p>⚡ <b>سريع:</b> معالجة في ثوانٍ.</p><p>🛡️ <b>آمن:</b> لا حاجة لتسجيل الدخول.</p><p>✨ <b>HD:</b> أفضل جودة.</p><p>🌐 <b>متعدد:</b> TikTok وInstagram وYouTube.</p>" }
+        };
+
+        let currentLang = 'id';
+
+        // =============================================
+        // PLATFORM DETECTION
+        // =============================================
+        function detectPlatform() {
+            const url = document.getElementById('url').value.trim();
+            const badge = document.getElementById('platformBadge');
+            if (!url) {
+                badge.textContent = '🎬 TikTok • Instagram • YouTube';
+                badge.style.color = '#e6192e';
+                badge.style.borderColor = '#e6192e';
+                return;
+            }
+            const p = getPlatform(url);
+            if (p === 'tiktok') { badge.textContent = '🎵 TikTok Terdeteksi'; badge.style.color = '#69C9D0'; badge.style.borderColor = '#69C9D0'; }
+            else if (p === 'instagram') { badge.textContent = '📸 Instagram Terdeteksi'; badge.style.color = '#E1306C'; badge.style.borderColor = '#E1306C'; }
+            else if (p === 'youtube') { badge.textContent = '▶️ YouTube Terdeteksi'; badge.style.color = '#FF0000'; badge.style.borderColor = '#FF0000'; }
+            else { badge.textContent = '❓ Platform Tidak Dikenal'; badge.style.color = '#aaa'; badge.style.borderColor = '#aaa'; }
+        }
+
+        function getPlatform(url) {
+            if (/tiktok\.com/i.test(url)) return 'tiktok';
+            if (/instagram\.com/i.test(url)) return 'instagram';
+            if (/youtube\.com|youtu\.be/i.test(url)) return 'youtube';
+            return null;
+        }
+
+        // =============================================
+        // TOAST & SIDEBAR
+        // =============================================
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('active'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('active'); }
+
+        function changeLang(lang) {
+            currentLang = lang;
+            const data = langData[lang];
+            document.getElementById('sideTitle').innerText = data.sideTitle;
+            document.getElementById('mainTitle').innerText = data.mainTitle;
+            document.getElementById('subTitle').innerText = data.subTitle;
+            document.getElementById('btnText').innerText = data.btnText;
+            document.getElementById('url').placeholder = data.placeholder;
+            document.getElementById('descTitle1').innerText = data.descTitle1;
+            document.getElementById('descText1').innerText = data.descText1;
+            document.getElementById('descTitle2').innerText = data.descTitle2;
+            document.getElementById('descText2').innerHTML = data.descText2;
+            closeSidebar();
+        }
+
+        // =============================================
+        // HELPER: sanitize judul jadi nama file yang aman
+        // =============================================
+        function sanitizeFilename(name, ext) {
+            if (!name || name.trim() === '') return `zriell-tik-video.${ext}`;
+            return name
+                .replace(/[\\/:*?"<>|]/g, '')   // karakter ilegal di Windows
+                .replace(/\s+/g, ' ')             // spasi berlebih
+                .trim()
+                .substring(0, 100)                // max 100 karakter
+                + '.' + ext;
+        }
+
+        // =============================================
+        // HELPER: fetch video URL terus trigger download pakai Blob
+        // supaya nama file sesuai judul, bukan "download.mp4"
+        // =============================================
+        async function triggerBlobDownload(fileUrl, filename, statusEl, labelText) {
+            // Tampilkan tombol loading dulu
+            statusEl.innerHTML += `<div id="dl-progress-${filename.substring(0,10)}" style="font-size:0.75rem;color:#aaa;margin-top:6px;">⬇️ Menyiapkan "${filename}"...</div>`;
+            try {
+                const resp = await fetch(fileUrl);
+                if (!resp.ok) throw new Error('fetch failed');
+                const blob = await resp.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+                // Update status
+                const prog = document.getElementById(`dl-progress-${filename.substring(0,10)}`);
+                if (prog) prog.textContent = `✅ Berhasil disimpan sebagai "${filename}"`;
+            } catch(e) {
+                // Kalau blob gagal (CORS dll), fallback buka tab baru
+                window.open(fileUrl, '_blank');
+                const prog = document.getElementById(`dl-progress-${filename.substring(0,10)}`);
+                if (prog) prog.textContent = `⚠️ Dibuka di tab baru. Klik kanan → Simpan sebagai "${filename}"`;
+            }
+        }
+
+        // =============================================
+        // MAIN DOWNLOAD ROUTER
+        // =============================================
+        async function download() {
+            const url = document.getElementById('url').value.trim();
+            const status = document.getElementById('status');
+            const btn = document.getElementById('btnText');
+
+            if (!url) return showToast(langData[currentLang].alertEmpty);
+
+            const platform = getPlatform(url);
+            if (!platform) {
+                status.innerHTML = "<span style='color:#ff4d4d;'>❌ Platform tidak dikenal. Masukkan link TikTok, Instagram, atau YouTube.</span>";
+                return;
+            }
+
+            btn.disabled = true;
+            status.innerHTML = "<span style='color:#e6192e;'>⏳ Mengambil info video...</span>";
+
+            try {
+                if (platform === 'tiktok') await downloadTikTok(url, status);
+                else if (platform === 'instagram') await downloadInstagram(url, statu
